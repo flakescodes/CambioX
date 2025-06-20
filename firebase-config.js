@@ -1,3 +1,4 @@
+// REPLACE WITH YOUR CONFIG (from Firebase Console)
 const firebaseConfig = {
   apiKey: "AIzaSyAtDUiKyf35XYWmFPoqiO44dDDkBaHKtB8",
   authDomain: "cambio-x.firebaseapp.com",
@@ -7,4 +8,8 @@ const firebaseConfig = {
   appId: "1:678785519068:web:528cfe40b60d0a6f065319",
   measurementId: "G-V01SE5YXBP"
 };
-firebase.initializeApp(firebaseConfig);
+
+// Initialize Firebase
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
