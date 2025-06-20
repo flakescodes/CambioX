@@ -1,21 +1,19 @@
-console.log("Script loaded!"); // Debug check
-
-// Initialize Firebase
+// Firebase Setup
 const db = firebase.database();
 
-// Game state
+// Game State
 let gameId;
 let playerId = "player-" + Math.random().toString(36).substring(2, 8);
 
-// DOM elements
-const lobby = document.getElementById('lobby');
-const game = document.getElementById('game');
+// DOM Elements
+const lobbyDiv = document.getElementById('lobby');
+const gameDiv = document.getElementById('game');
 const createBtn = document.getElementById('create-btn');
 const joinBtn = document.getElementById('join-btn');
 const gameIdInput = document.getElementById('game-id');
 const playersDiv = document.getElementById('players');
 
-// Create game
+// Create Game
 createBtn.addEventListener('click', () => {
     gameId = "game-" + Math.random().toString(36).substring(2, 6);
     db.ref(`games/${gameId}`).set({
@@ -24,13 +22,10 @@ createBtn.addEventListener('click', () => {
     }).then(() => {
         alert(`Game created! ID: ${gameId}`);
         joinGame(gameId);
-    }).catch(error => {
-        console.error("Create error:", error);
-        alert("Error creating game. Check console.");
     });
 });
 
-// Join game
+// Join Game (FIXED VERSION - no gameState reference)
 joinBtn.addEventListener('click', () => {
     const id = gameIdInput.value.trim();
     if (!id) return alert("Enter Game ID!");
@@ -40,23 +35,19 @@ joinBtn.addEventListener('click', () => {
 function joinGame(id) {
     gameId = id;
     db.ref(`games/${gameId}`).once('value').then(snapshot => {
-        if (!snapshot.exists()) {
-            alert("Game not found!");
-            return;
-        }
+        if (!snapshot.exists()) return alert("Game not found!");
         
-        // Add player to game
+        // Count existing players safely
+        const playerCount = Object.keys(snapshot.val().players || {}).length;
+        
         db.ref(`games/${gameId}/players/${playerId}`).set({
-            name: `Player_${Object.keys(snapshot.val().players || {}).length + 1}`,
+            name: `Player_${playerCount + 1}`,
             points: 0
         }).then(() => {
-            lobby.style.display = "none";
-            game.style.display = "block";
+            lobbyDiv.style.display = "none";
+            gameDiv.style.display = "block";
             startGame();
         });
-    }).catch(error => {
-        console.error("Join error:", error);
-        alert("Error joining. Check console.");
     });
 }
 
@@ -65,7 +56,6 @@ function startGame() {
         const gameData = snapshot.val();
         if (!gameData) return;
         
-        // Update players list
         playersDiv.innerHTML = Object.entries(gameData.players || {}).map(([id, player]) => 
             `<div>${player.name}: ${player.points} pts</div>`
         ).join('');
