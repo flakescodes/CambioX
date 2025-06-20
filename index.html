@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cambio</title>
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+    <div id="lobby">
+        <h1>🎴 CAMBIO</h1>
+        <button id="create-btn">CREATE GAME</button>
+        <div>
+            <input type="text" id="game-id" placeholder="Game ID">
+            <button id="join-btn">JOIN</button>
+        </div>
+    </div>
+    <div id="game" style="display:none;">
+        <div id="players"></div>
+        <div id="cards"></div>
+        <button id="cambio-btn">CALL CAMBIO!</button>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
