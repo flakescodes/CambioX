@@ -4,46 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CambioX</title>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
-    <!-- CSS -->
     <link href="style.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Lobby Screen -->
-    <div id="lobby" class="screen active">
-        <h1>🎴 CAMBIOX</h1>
-        <button id="create-btn">CREATE GAME</button>
-        <div class="join-box">
-            <input type="text" id="game-id" placeholder="Enter Game ID">
-            <button id="join-btn">JOIN GAME</button>
-        </div>
-    </div>
-
-    <!-- Game Screen -->
-    <div id="game" class="screen">
-        <!-- Players List -->
-        <div id="players"></div>
-
-        <!-- Game Area -->
-        <div id="game-area">
-            <div id="deck" class="card back">DECK</div>
-            <div id="discard-pile" class="card">DISCARD</div>
+    <div id="app">
+        <!-- Lobby Screen -->
+        <div id="lobby" class="screen active">
+            <h1>🎴 CAMBIOX</h1>
+            <div class="buttons">
+                <button id="create-btn" class="btn">CREATE GAME</button>
+                <div class="join-box">
+                    <input type="text" id="game-id" placeholder="Enter Game ID">
+                    <button id="join-btn" class="btn">JOIN</button>
+                </div>
+            </div>
         </div>
 
-        <!-- Player's Hand -->
-        <div id="hand"></div>
-
-        <!-- Action Buttons -->
-        <div id="actions">
-            <button id="draw-card">DRAW CARD</button>
-            <button id="call-cambio">CALL CAMBIO!</button>
-        </div>
-
-        <!-- Chat (Optional) -->
-        <div id="chat">
-            <div id="messages"></div>
-            <input type="text" id="message-input" placeholder="Type a message...">
+        <!-- Game Screen -->
+        <div id="game" class="screen">
+            <div id="players-container"></div>
+            <div id="game-area">
+                <div id="deck" class="card back">DECK</div>
+                <div id="discard-pile"></div>
+            </div>
+            <div id="hand"></div>
+            <div id="actions"></div>
         </div>
     </div>
 
@@ -51,8 +37,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="firebase-config.js"></script>
-    
-    <!-- Game Logic -->
     <script src="game.js"></script>
 </body>
 </html>
