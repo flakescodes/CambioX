@@ -1,39 +1,27 @@
-// ======================
-// Firebase Setup
-// ======================
+console.log("Game script loaded!");
+
+// Firebase setup
 const db = firebase.database();
 
-// ======================
-// Game State
-// ======================
+// Game state
 let gameId;
 let playerId = "player-" + Math.random().toString(36).substring(2, 8);
-let myCards = [];
+let currentGame = {};
 
-// ======================
-// DOM Elements
-// ======================
-const lobbyDiv = document.getElementById('lobby');
-const gameDiv = document.getElementById('game');
+// DOM elements
+const lobby = document.getElementById('lobby');
+const game = document.getElementById('game');
 const createBtn = document.getElementById('create-btn');
 const joinBtn = document.getElementById('join-btn');
 const gameIdInput = document.getElementById('game-id');
-const playersDiv = document.getElementById('players');
-const cardsDiv = document.getElementById('cards');
-const actionsDiv = document.getElementById('actions');
+const playersContainer = document.getElementById('players-container');
+const hand = document.getElementById('hand');
+const actions = document.getElementById('actions');
 
-// ======================
-// Initialize Game
-// ======================
-createBtn.addEventListener('click', createGame);
-joinBtn.addEventListener('click', () => joinGame(gameIdInput.value.trim()));
-
-// ======================
-// Core Game Functions
-// ======================
-function createGame() {
+// Create game
+createBtn.addEventListener('click', () => {
     gameId = "game-" + Math.random().toString(36).substring(2, 6);
-    const initialDeck = shuffleDeck(createDeck());
+    const initialDeck = createDeck();
     
     db.ref(`games/${gameId}`).set({
         players: {},
@@ -44,13 +32,21 @@ function createGame() {
     }).then(() => {
         alert(`Game created! ID: ${gameId}`);
         joinGame(gameId);
+    }).catch(error => {
+        console.error("Error creating game:", error);
+        alert("Failed to create game. Check console.");
     });
-}
+});
+
+// Join game
+joinBtn.addEventListener('click', () => {
+    const id = gameIdInput.value.trim();
+    if (!id) return alert("Please enter a Game ID!");
+    joinGame(id);
+});
 
 function joinGame(id) {
-    if (!id) return alert("Enter Game ID!");
     gameId = id;
-    
     db.ref(`games/${gameId}`).once('value').then(snapshot => {
         if (!snapshot.exists()) return alert("Game not found!");
         
@@ -58,42 +54,50 @@ function joinGame(id) {
         const playerCount = Object.keys(gameData.players || {}).length;
         
         db.ref(`games/${gameId}/players/${playerId}`).set({
-            name: `Player_${playerCount + 1}`,
+            name: `Player ${playerCount + 1}`,
             hand: [],
-            visibleCards: [],
             points: 0,
-            ready: false
+            ready: true
         }).then(() => {
-            lobbyDiv.style.display = "none";
-            gameDiv.style.display = "block";
+            lobby.style.display = "none";
+            game.style.display = "block";
             startGame();
         });
+    }).catch(error => {
+        console.error("Join error:", error);
+        alert("Error joining game. Check console.");
     });
 }
 
 function startGame() {
     db.ref(`games/${gameId}`).on('value', snapshot => {
-        const game = snapshot.val();
-        if (!game) return;
-        
-        updatePlayersUI(game.players);
-        
-        // Start game if 2+ players and host triggers
-        if (game.status === "playing") {
-            if (game.currentPlayer === playerId) {
-                showPlayerTurnUI();
-            }
-            renderCards(game);
-        }
+        currentGame = snapshot.val() || {};
+        updateGameUI();
     });
 }
 
-// ======================
-// Card Logic
-// ======================
+function updateGameUI() {
+    // Update players list
+    playersContainer.innerHTML = Object.entries(currentGame.players || {}).map(([id, player]) => `
+        <div class="player ${id === playerId ? 'you' : ''}">
+            ${player.name}: ${player.points} pts
+        </div>
+    `).join('');
+    
+    // Update hand
+    const myHand = currentGame.players?.[playerId]?.hand || [];
+    hand.innerHTML = myHand.map(card => `
+        <div class="card ${['hearts', 'diamonds'].includes(card.suit) ? 'red' : ''}">
+            ${card.value}${getSuitSymbol(card.suit)}
+            <span class="value">${getCardPoints(card)}</span>
+        </div>
+    `).join('');
+}
+
+// Game logic helpers
 function createDeck() {
     const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
-    const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    const values = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
     let deck = [];
     
     suits.forEach(suit => {
@@ -106,7 +110,7 @@ function createDeck() {
     deck.push({ value: 'Joker', suit: 'joker' });
     deck.push({ value: 'Joker', suit: 'joker' });
     
-    return deck;
+    return shuffleDeck(deck);
 }
 
 function shuffleDeck(deck) {
@@ -115,26 +119,6 @@ function shuffleDeck(deck) {
         [deck[i], deck[j]] = [deck[j], deck[i]];
     }
     return deck;
-}
-
-function renderCards(game) {
-    cardsDiv.innerHTML = '';
-    const me = game.players[playerId];
-    
-    // Show player's hand
-    me.hand.forEach((card, index) => {
-        const cardEl = document.createElement('div');
-        cardEl.className = 'card';
-        cardEl.innerHTML = `
-            <span class="value">${getCardValue(card)}</span>
-        `;
-        cardsDiv.appendChild(cardEl);
-    });
-}
-
-function getCardValue(card) {
-    if (card.value === 'Joker') return '🃏';
-    return `${card.value}${getSuitSymbol(card.suit)}`;
 }
 
 function getSuitSymbol(suit) {
@@ -147,53 +131,16 @@ function getSuitSymbol(suit) {
     return symbols[suit] || '';
 }
 
-// ======================
-// UI Helpers
-// ======================
-function updatePlayersUI(players) {
-    playersDiv.innerHTML = Object.entries(players).map(([id, player]) => `
-        <div class="${id === playerId ? 'you' : ''}">
-            ${player.name}: ${player.points} pts
-        </div>
-    `).join('');
+function getCardPoints(card) {
+    if (card.value === 'Joker') return 0;
+    if (card.value === 'A') return 1;
+    if (['J','Q','K'].includes(card.value)) {
+        if (card.value === 'K' && ['hearts','diamonds'].includes(card.suit)) return -1;
+        if (card.value === 'K') return 13;
+        if (card.value === 'J') return 11;
+        if (card.value === 'Q') return 12;
+    }
+    return parseInt(card.value);
 }
 
-function showPlayerTurnUI() {
-    actionsDiv.innerHTML = `
-        <button id="draw-card">Draw Card</button>
-        <button id="call-cambio">Call Cambio!</button>
-    `;
-    
-    document.getElementById('draw-card').addEventListener('click', drawCard);
-    document.getElementById('call-cambio').addEventListener('click', callCambio);
-}
-
-// ======================
-// Game Actions
-// ======================
-function drawCard() {
-    db.ref(`games/${gameId}`).once('value').then(snapshot => {
-        const game = snapshot.val();
-        if (game.deck.length === 0) return alert("Deck is empty!");
-        
-        const newCard = game.deck.pop();
-        const updates = {
-            [`games/${gameId}/deck`]: game.deck,
-            [`games/${gameId}/players/${playerId}/hand`]: [...game.players[playerId].hand, newCard]
-        };
-        
-        db.ref().update(updates);
-    });
-}
-
-function callCambio() {
-    db.ref(`games/${gameId}/status`).set("ended");
-    calculateWinner();
-}
-
-function calculateWinner() {
-    // Implement scoring logic here
-}
-
-// Initialize
 console.log("Game initialized!");
