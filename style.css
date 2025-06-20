@@ -1,8 +1,5 @@
-/* ======================
-   Base Styles
-   ====================== */
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     background: #1a2a3a;
     color: white;
     margin: 0;
@@ -10,87 +7,50 @@ body {
     text-align: center;
 }
 
-button {
-    background: #e74c3c;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    margin: 10px;
-    border-radius: 50px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-button:hover {
-    background: #c0392b;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-input {
-    padding: 12px;
-    border-radius: 50px;
-    border: none;
-    margin-right: 10px;
-    width: 200px;
-}
-
-/* ======================
-   Screen Layouts
-   ====================== */
 .screen {
     display: none;
+    padding: 20px;
 }
 
 .screen.active {
     display: block;
 }
 
-#lobby {
-    max-width: 500px;
-    margin: 0 auto;
-    padding-top: 50px;
-}
-
 #lobby h1 {
     font-size: 3rem;
+    margin-bottom: 2rem;
     color: #f8c537;
-    margin-bottom: 40px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.btn {
+    background: #f8c537;
+    color: #1a2a3a;
+    border: none;
+    padding: 15px 25px;
+    font-size: 1.2rem;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
 }
 
 .join-box {
     display: flex;
-    justify-content: center;
-    margin-top: 20px;
+    gap: 10px;
 }
 
-/* ======================
-   Game Board
-   ====================== */
-#game {
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-#game-area {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin: 30px 0;
-}
-
-/* ======================
-   Cards
-   ====================== */
-#hand {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin: 30px auto;
-    max-width: 600px;
+#game-id {
+    flex: 1;
+    padding: 15px;
+    border-radius: 50px;
+    border: none;
 }
 
 .card {
@@ -101,17 +61,10 @@ input {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    font-size: 24px;
+    margin: 5px;
+    color: black;
     font-weight: bold;
-    color: #333;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    cursor: pointer;
-    transition: transform 0.2s;
     position: relative;
-}
-
-.card:hover {
-    transform: translateY(-10px);
 }
 
 .card.red {
@@ -120,12 +73,11 @@ input {
 
 .card .value {
     position: absolute;
-    bottom: 10px;
-    right: 10px;
-    font-size: 14px;
+    bottom: 5px;
+    right: 5px;
+    font-size: 1rem;
 }
 
-/* Card backs */
 .back {
     background: repeating-linear-gradient(
         45deg,
@@ -137,51 +89,15 @@ input {
     color: white;
 }
 
-/* ======================
-   Players List
-   ====================== */
-#players {
+#game-area {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 50px;
+    margin: 30px 0;
+}
+
+#hand {
+    display: flex;
+    justify-content: center;
     flex-wrap: wrap;
-    margin-bottom: 30px;
-}
-
-#players div {
-    background: rgba(255,255,255,0.1);
-    padding: 10px 20px;
-    border-radius: 50px;
-}
-
-#players .you {
-    background: #f8c537;
-    color: #1a2a3a;
-    font-weight: bold;
-}
-
-/* ======================
-   Actions Area
-   ====================== */
-#actions {
-    margin: 20px 0;
-}
-
-/* ======================
-   Responsive Adjustments
-   ====================== */
-@media (max-width: 600px) {
-    .card {
-        width: 60px;
-        height: 90px;
-        font-size: 18px;
-    }
-    
-    #lobby h1 {
-        font-size: 2rem;
-    }
-    
-    button, input {
-        padding: 10px 15px;
-    }
 }
