@@ -1,60 +1,73 @@
-// Firebase Database Reference
+console.log("Script loaded!"); // Debug check
+
+// Initialize Firebase
 const db = firebase.database();
 
-// Game State
+// Game state
 let gameId;
-let playerId = Math.random().toString(36).substring(2, 10);
+let playerId = "player-" + Math.random().toString(36).substring(2, 8);
 
-// DOM Elements
-const lobbyDiv = document.getElementById('lobby');
-const gameDiv = document.getElementById('game');
+// DOM elements
+const lobby = document.getElementById('lobby');
+const game = document.getElementById('game');
 const createBtn = document.getElementById('create-btn');
 const joinBtn = document.getElementById('join-btn');
 const gameIdInput = document.getElementById('game-id');
+const playersDiv = document.getElementById('players');
 
-// Create Game
+// Create game
 createBtn.addEventListener('click', () => {
-    gameId = Math.random().toString(36).substring(2, 8);
+    gameId = "game-" + Math.random().toString(36).substring(2, 6);
     db.ref(`games/${gameId}`).set({
         players: {},
-        deck: [],
         status: "waiting"
     }).then(() => {
-        alert(`Game created! Share this ID: ${gameId}`);
+        alert(`Game created! ID: ${gameId}`);
         joinGame(gameId);
+    }).catch(error => {
+        console.error("Create error:", error);
+        alert("Error creating game. Check console.");
     });
 });
 
-// Join Game
+// Join game
 joinBtn.addEventListener('click', () => {
-    const gameId = gameIdInput.value.trim();
-    if (!gameId) return alert("Please enter a Game ID!");
-    joinGame(gameId);
+    const id = gameIdInput.value.trim();
+    if (!id) return alert("Enter Game ID!");
+    joinGame(id);
 });
 
 function joinGame(id) {
     gameId = id;
-    db.ref(`games/${gameId}/players/${playerId}`).set({
-        name: `Player ${Object.keys(gameState || {}).length + 1}`,
-        hand: [],
-        points: 0
-    }).then(() => {
-        lobbyDiv.style.display = "none";
-        gameDiv.style.display = "block";
-        startGame();
+    db.ref(`games/${gameId}`).once('value').then(snapshot => {
+        if (!snapshot.exists()) {
+            alert("Game not found!");
+            return;
+        }
+        
+        // Add player to game
+        db.ref(`games/${gameId}/players/${playerId}`).set({
+            name: `Player_${Object.keys(snapshot.val().players || {}).length + 1}`,
+            points: 0
+        }).then(() => {
+            lobby.style.display = "none";
+            game.style.display = "block";
+            startGame();
+        });
+    }).catch(error => {
+        console.error("Join error:", error);
+        alert("Error joining. Check console.");
     });
 }
 
 function startGame() {
-    db.ref(`games/${gameId}`).on('value', (snapshot) => {
-        const game = snapshot.val();
-        updateUI(game);
+    db.ref(`games/${gameId}`).on('value', snapshot => {
+        const gameData = snapshot.val();
+        if (!gameData) return;
+        
+        // Update players list
+        playersDiv.innerHTML = Object.entries(gameData.players || {}).map(([id, player]) => 
+            `<div>${player.name}: ${player.points} pts</div>`
+        ).join('');
     });
-}
-
-function updateUI(game) {
-    const playersDiv = document.getElementById('players');
-    playersDiv.innerHTML = Object.entries(game.players).map(([id, player]) => 
-        `<div>${player.name}: ${player.points} pts</div>`
-    ).join('');
 }
