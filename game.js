@@ -1,18 +1,16 @@
-// Firebase Setup
+// Firebase Database Reference
 const db = firebase.database();
 
-// Game Elements
+// Game State
+let gameId;
+let playerId = Math.random().toString(36).substring(2, 10);
+
+// DOM Elements
 const lobbyDiv = document.getElementById('lobby');
 const gameDiv = document.getElementById('game');
 const createBtn = document.getElementById('create-btn');
 const joinBtn = document.getElementById('join-btn');
 const gameIdInput = document.getElementById('game-id');
-const playersDiv = document.getElementById('players');
-const cardsDiv = document.getElementById('cards');
-const cambioBtn = document.getElementById('cambio-btn');
-
-let gameId;
-let playerId = Math.random().toString(36).substring(2, 10);
 
 // Create Game
 createBtn.addEventListener('click', () => {
@@ -29,19 +27,22 @@ createBtn.addEventListener('click', () => {
 
 // Join Game
 joinBtn.addEventListener('click', () => {
-    joinGame(gameIdInput.value.trim());
+    const gameId = gameIdInput.value.trim();
+    if (!gameId) return alert("Please enter a Game ID!");
+    joinGame(gameId);
 });
 
 function joinGame(id) {
     gameId = id;
     db.ref(`games/${gameId}/players/${playerId}`).set({
-        name: `Player ${Object.keys(gameState.players || {}).length + 1}`,
+        name: `Player ${Object.keys(gameState || {}).length + 1}`,
         hand: [],
         points: 0
+    }).then(() => {
+        lobbyDiv.style.display = "none";
+        gameDiv.style.display = "block";
+        startGame();
     });
-    lobbyDiv.style.display = "none";
-    gameDiv.style.display = "block";
-    startGame();
 }
 
 function startGame() {
@@ -52,7 +53,8 @@ function startGame() {
 }
 
 function updateUI(game) {
-    playersDiv.innerHTML = Object.values(game.players).map(p => 
-        `<div>${p.name}: ${p.points} pts</div>`
+    const playersDiv = document.getElementById('players');
+    playersDiv.innerHTML = Object.entries(game.players).map(([id, player]) => 
+        `<div>${player.name}: ${player.points} pts</div>`
     ).join('');
 }
